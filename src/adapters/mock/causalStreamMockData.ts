@@ -1,0 +1,192 @@
+import type { ModelMetric, PredictionEvent } from '@/domain/entities/analysis';
+
+export const mockEvents: PredictionEvent[] = [
+  {
+    id: 'p-1',
+    sessionId: 'S-20241211-001',
+    timestamp: '10:14:01',
+    seconds: 1,
+    action: 'Đang làm việc',
+    actionEn: 'Working',
+    confidence: 0.78,
+    decision: 'WAIT',
+    message: '-',
+    source: 'Camera',
+    description: 'Người dùng đang làm việc tại bàn, chưa có hành động đáng kể.',
+  },
+  {
+    id: 'p-2',
+    sessionId: 'S-20241211-001',
+    timestamp: '10:14:03',
+    seconds: 3,
+    action: 'Không có hành động đáng kể',
+    actionEn: 'No significant action',
+    confidence: 0.62,
+    decision: 'WAIT',
+    message: '-',
+    source: 'Camera',
+    description: 'Hệ thống tiếp tục quan sát thêm bằng chứng.',
+  },
+  {
+    id: 'p-3',
+    sessionId: 'S-20241211-001',
+    timestamp: '10:14:05',
+    seconds: 5,
+    action: 'Đang nhấc cốc',
+    actionEn: 'Picking up cup',
+    confidence: 0.87,
+    decision: 'SPEAK',
+    message: 'Bạn đang nhấc cốc. Hãy cẩn thận và uống đủ nước nhé!',
+    source: 'Camera',
+    description: 'Người đưa tay tới và nhấc cốc lên.',
+  },
+  {
+    id: 'p-4',
+    sessionId: 'S-20241211-001',
+    timestamp: '10:14:08',
+    seconds: 8,
+    action: 'Đưa cốc về phía bàn',
+    actionEn: 'Moving cup',
+    confidence: 0.82,
+    decision: 'UPDATE',
+    message: 'Cập nhật: Người dùng đang đặt cốc về phía bàn.',
+    source: 'Camera',
+    description: 'Ngữ cảnh hành động thay đổi, cần cập nhật phản hồi trước đó.',
+  },
+  {
+    id: 'p-5',
+    sessionId: 'S-20241211-001',
+    timestamp: '10:14:12',
+    seconds: 12,
+    action: 'Đang uống nước',
+    actionEn: 'Drinking water',
+    confidence: 0.92,
+    decision: 'SPEAK',
+    message: 'Bạn đang uống nước.',
+    source: 'Camera',
+    description: 'Hành động uống nước được mô phỏng trong demo.',
+  },
+];
+
+export const sessions = [
+  {
+    id: 'S-20241211-001',
+    start: '11 Thg 12, 2024, 10:13:45',
+    end: '11 Thg 12, 2024, 10:16:32',
+    source: 'Camera trực tiếp',
+    model: 'GRU-v1',
+    events: mockEvents,
+  },
+  {
+    id: 'S-20241210-003',
+    start: '10 Thg 12, 2024, 09:20:00',
+    end: '10 Thg 12, 2024, 09:24:18',
+    source: 'Camera trực tiếp',
+    model: 'Causal Transformer',
+    events: [
+      { ...mockEvents[1], id: 'p-6', sessionId: 'S-20241210-003', timestamp: '09:21:58', confidence: 0.56 },
+      { ...mockEvents[4], id: 'p-7', sessionId: 'S-20241210-003', timestamp: '09:22:14', confidence: 0.92 },
+      { ...mockEvents[3], id: 'p-8', sessionId: 'S-20241210-003', timestamp: '09:22:48', confidence: 0.84 },
+    ],
+  },
+  {
+    id: 'S-20241210-002',
+    start: '10 Thg 12, 2024, 15:09:44',
+    end: '10 Thg 12, 2024, 15:13:19',
+    source: 'Video demo',
+    model: 'Mamba / SSM',
+    events: [
+      { ...mockEvents[0], id: 'p-9', sessionId: 'S-20241210-002', timestamp: '15:10:15', confidence: 0.6 },
+      { ...mockEvents[3], id: 'p-10', sessionId: 'S-20241210-002', timestamp: '15:10:32', action: 'Đang xem màn hình', confidence: 0.88 },
+      { ...mockEvents[2], id: 'p-11', sessionId: 'S-20241210-002', timestamp: '15:11:20', confidence: 0.9 },
+    ],
+  },
+];
+
+export const allHistory = sessions.flatMap((session) => session.events);
+
+export const models: ModelMetric[] = [
+  {
+    name: 'GRU-v1',
+    version: 'v1.2.3',
+    architecture: 'GRU 1 layer, 512 hidden',
+    experimentId: 'exp_20241201_001',
+    dataset: 'EPIC-KITCHENS-100',
+    accuracy: 92.3,
+    macroF1: 88.5,
+    early25: 78.1,
+    early50: 88.5,
+    early75: 91.7,
+    early100: 92.3,
+    ece: 0.048,
+    latency: 185,
+    memory: 320,
+    status: 'Đang triển khai',
+  },
+  {
+    name: 'Causal Transformer',
+    version: 'v2.0.8',
+    architecture: '4-layer causal temporal attention',
+    experimentId: 'exp_20241201_002',
+    dataset: 'EPIC-KITCHENS-100',
+    accuracy: 90.7,
+    macroF1: 87.9,
+    early25: 82.4,
+    early50: 90.1,
+    early75: 90.4,
+    early100: 90.7,
+    ece: 0.063,
+    latency: 412,
+    memory: 980,
+    status: 'Thử nghiệm',
+  },
+  {
+    name: 'Mamba / SSM',
+    version: 'v0.9.2',
+    architecture: 'Selective state-space temporal model',
+    experimentId: 'exp_20241201_003',
+    dataset: 'EPIC-KITCHENS-100',
+    accuracy: 88.9,
+    macroF1: 86.8,
+    early25: 76.3,
+    early50: 86.7,
+    early75: 87.8,
+    early100: 88.9,
+    ece: 0.071,
+    latency: 220,
+    memory: 410,
+    status: 'Thử nghiệm',
+  },
+];
+
+export const trendData = [
+  { label: '25%', GRU: 78.1, Transformer: 82.4, Mamba: 76.3 },
+  { label: '50%', GRU: 88.5, Transformer: 90.1, Mamba: 86.7 },
+  { label: '75%', GRU: 91.7, Transformer: 90.4, Mamba: 87.8 },
+  { label: '100%', GRU: 92.3, Transformer: 90.7, Mamba: 88.9 },
+];
+
+export const monthlyData = Array.from({ length: 12 }, (_, index) => ({
+  month: `Thg ${index + 1}`,
+  GRU: [46, 53, 59, 61, 67, 62, 66, 64, 68, 67, 69, 78][index],
+  Transformer: [56, 63, 68, 70, 75, 69, 73, 72, 76, 75, 77, 82][index],
+  Mamba: [35, 44, 50, 51, 58, 52, 57, 54, 56, 55, 60, 76][index],
+}));
+
+export const resourceData = [
+  { time: '02h', CPU: 58, RAM: 40, GPU: 22, response: 160, sessions: 116 },
+  { time: '04h', CPU: 72, RAM: 52, GPU: 36, response: 196, sessions: 162 },
+  { time: '06h', CPU: 78, RAM: 58, GPU: 40, response: 245, sessions: 201 },
+  { time: '08h', CPU: 70, RAM: 52, GPU: 35, response: 218, sessions: 202 },
+  { time: '10h', CPU: 82, RAM: 66, GPU: 48, response: 231, sessions: 241 },
+  { time: '12h', CPU: 75, RAM: 58, GPU: 42, response: 199, sessions: 248 },
+  { time: '14h', CPU: 80, RAM: 62, GPU: 48, response: 185, sessions: 287 },
+];
+
+export const trainingData = Array.from({ length: 11 }, (_, index) => ({
+  epoch: index * 5,
+  trainLoss: Number((2.2 / (index + 1)).toFixed(2)),
+  valLoss: Number((2.4 / (index + 1) + 0.05).toFixed(2)),
+  trainAcc: Math.min(92, 24 + index * 7),
+  valAcc: Math.min(88, 18 + index * 7),
+}));
